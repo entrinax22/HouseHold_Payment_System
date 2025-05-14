@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex-1 space-y-4 p-8 pt-6 flex flex-col items-center">
             <div class="flex items-center justify-between space-y-2 w-full max-w-7xl mx-auto">
-                <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
+                <h2 class="text-3xl font-bold tracking-tight">Dashboardssssssssssssssss</h2>
                 <div class="flex items-center space-x-2">
                     <button
                         class="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-black shadow transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
