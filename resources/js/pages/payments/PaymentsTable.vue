@@ -1,6 +1,6 @@
 <template>
     <Head title="Payments" />
-    <AppLayout >
+    <AdminLayout >
         <div class="p-6 max-w-5xl mx-auto">
             <div class="mb-6 flex items-center justify-between flex-wrap gap-2">
                 <h1 class="text-3xl font-bold tracking-tight">Payments</h1>
@@ -52,13 +52,14 @@
                 </table>
             </div>
         </div>
-    </AppLayout>
+    </AdminLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import MainLayout from '@/layouts/MainLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 
 // Mock payment data
 const payments = ref([
