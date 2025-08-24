@@ -71,4 +71,56 @@ class PaymentController extends Controller
             'message' => 'Cash Payment Successful!'
         ]);
     }
+
+    public function list(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $query = Payment::with('user', 'contribution'); 
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('amount_paid', 'like', "%{$search}%")
+                    ->orWhere('payment_status', 'like', "%{$search}%")
+                    ->orWhere('payment_method', 'like', "%{$search}%");
+                });
+            }
+
+            $query->orderBy('payment_id', 'desc');
+
+            $payments = $query->paginate(10);
+
+            $data = $payments->getCollection()->transform(function ($item) {
+                return [
+                    'payment_id'        => encrypt($item->payment_id),
+                    'contribution_id'   => encrypt($item->contribution_id),
+                    'user_id'           => $item->user ? encrypt($item->user->id) : null,
+                    'user_name'         => $item->user ? $item->user->name : 'Community',
+                    'amount_paid'       => $item->amount_paid,
+                    'payment_status'    => $item->payment_status,
+                    'payment_method'    => $item->payment_method,
+                    'description'       => $item->contribution ? $item->contribution->description : null,
+                    'contribution_date' => $item->contribution ? $item->contribution->contribution_date : null,
+                    'contribution_type' => $item->contribution ? $item->contribution->contribution_type : null,
+                ];
+            });
+
+            return response()->json([
+                'result'     => true,
+                'data'       => $data,
+                'pagination' => [
+                    'current_page' => $payments->currentPage(),
+                    'last_page'    => $payments->lastPage(),
+                    'per_page'     => $payments->perPage(),
+                    'total'        => $payments->total(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'result'  => false,
+                'message' => 'Failed to get payment lists. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

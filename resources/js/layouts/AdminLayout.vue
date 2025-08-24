@@ -27,7 +27,7 @@
           <div class="text-xs uppercase text-gray-400 mb-2">Tables</div>
           <ul class="space-y-2">
             <li>
-              <Link href="/admin/users" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
+              <Link href="#" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
                 <span>👤</span>
                 <span>Users</span>
               </Link>
@@ -50,13 +50,13 @@
           <div class="text-xs uppercase text-gray-400 mb-2">Reports</div>
           <ul class="space-y-2">
             <li>
-              <Link href="/admin/reports/summary" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
+              <Link href="#" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
                 <span>📊</span>
                 <span>Summary</span>
               </Link>
             </li>
             <li>
-              <Link href="/admin/reports/monthly" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
+              <Link href="#" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
                 <span>📅</span>
                 <span>Monthly</span>
               </Link>
@@ -67,7 +67,7 @@
       </nav>
       <div class="mt-auto p-4 border-t border-gray-700 text-sm text-gray-400 flex flex-col gap-2">
         <div v-if="user" class="flex items-center gap-2 mb-2">
-          <Link href="/profile" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded text-white">
+          <Link href="#" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded text-white">
             <span>🙍‍♂️</span>
             <span>{{ user.name }}</span>
           </Link>

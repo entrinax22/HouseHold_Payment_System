@@ -28,6 +28,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
     Route::get('contributions/user-contribution-list', [ContributionController::class, 'userContributionList'])->name('contributions.userList');
     Route::get('contributions/my-contributions', [ContributionController::class, 'userContributions'])->name('contributions.userContributions');
+
 });
 
 Route::group(['middleware' => ['auth', 'verified', 'admin']], function () {
@@ -40,6 +41,9 @@ Route::group(['middleware' => ['auth', 'verified', 'admin']], function () {
     Route::post('contributions/store', [ContributionController::class, 'store'])->name('contributions.store');
 
     Route::get('admin/users', [UserController::class, 'list'])->name('admin.users.list');
+    Route::get('payments/list', [PaymentController::class, 'list'])->name('payments.list');
+    Route::get('contributions/list', [ContributionController::class, 'list'])->name('contributions.list');
+
 });
 
 

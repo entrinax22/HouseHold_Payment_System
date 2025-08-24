@@ -92,4 +92,54 @@ class ContributionController extends Controller
             'message' => 'User contributions retrieved successfully.'
         ]);
     }
+
+    public function list(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $query = Contribution::with('user'); 
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('amount', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+            $query->orderBy('contribution_id', 'desc');
+
+            $contributions = $query->paginate(10);
+
+            $data = $contributions->getCollection()->transform(function ($item) {
+                return [
+                    'contribution_id'   => encrypt($item->contribution_id),
+                    'user_id'           => encrypt($item->user_id),
+                    'user_name'         => $item->user ? $item->user->name : 'Community',
+                    'amount'            => $item->amount,
+                    'contribution_date' => $item->contribution_date,
+                    'contribution_type' => $item->contribution_type,
+                    'payment_status'    => $item->payment_status,
+                    'description'       => $item->description,
+                    'status'            => $item->status,
+                ];
+            });
+
+            return response()->json([
+                'result'     => true,
+                'data'       => $data,
+                'pagination' => [
+                    'current_page' => $contributions->currentPage(),
+                    'last_page'    => $contributions->lastPage(),
+                    'per_page'     => $contributions->perPage(),
+                    'total'        => $contributions->total(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'result'  => false,
+                'message' => 'Failed to get contribution lists. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
