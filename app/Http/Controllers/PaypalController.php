@@ -29,6 +29,8 @@ class PaypalController extends Controller
                 ]
             ],
             "application_context" => [
+                "brand_name" => "OFW Services",
+                 "brand_name" => "Household Contribution Payment",
                 "cancel_url" => route('paypal.cancel'),
                 "return_url" => route('paypal.success', [
                     'contribution_id' => $request->contribution_id
@@ -78,7 +80,7 @@ class PaypalController extends Controller
                 $contribution->save();
             }
 
-            return redirect()->route('home')->with('success', 'Payment successful!');
+            return redirect()->route('home')->with('success', 'Paypal Payment Successful!');
         }
 
         return redirect()->route('paypal.cancel')->with('error', 'Payment failed.');

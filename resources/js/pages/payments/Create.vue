@@ -81,6 +81,7 @@ import { ref, computed, watch } from 'vue';
 import { Head, usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import MainLayout from '@/layouts/MainLayout.vue';
+import { notify } from "@/composables/useToast";
 
 const page = usePage();
 const { contribution } = page.props;
@@ -143,6 +144,11 @@ const submitPayment = async () => {
             const response = await axios.post(route('payments.store'), form.value);
             if (response.data.result === true) {
                 console.log('Cash payment successful', response.data.message);
+                notify('Cash payment successful!', 'success');
+
+                setTimeout(() => {
+                    window.location.href = route('home');
+                }, 3000);
             }
         }
     } catch (error) {

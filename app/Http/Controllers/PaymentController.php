@@ -68,7 +68,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'result' => true,
-            'message' => 'Successfully saved payment!'
+            'message' => 'Cash Payment Successful!'
         ]);
     }
 }

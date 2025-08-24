@@ -45,6 +45,7 @@
   <div class="min-h-screen flex flex-col">
     <main class="flex-1">
       <slot />
+      <Toast :message="toastMessage" :type="toastType" />
     </main>
     <footer class="text-center py-6 text-sm text-muted-foreground border-t border-muted">
         &copy; {{ new Date().getFullYear() }} Neighborhood Household Payment System. All rights reserved.
@@ -53,8 +54,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
+import Toast from '@/components/Toast.vue';
+import { toastMessage, toastType } from '@/composables/useToast'
+import { notify } from '@/composables/useToast';
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const currentUrl = computed(() => page.url);
@@ -68,6 +73,19 @@ const linkClass = (path) => {
     ? 'font-medium text-white'
     : 'font-medium text-muted-foreground hover:text-primary transition-colors';
 };
+
+watch(
+  () => page.props.flash,
+  (flash) => {
+    if (flash.success) {
+      notify(flash.success, 'success')
+    }
+    if (flash.error) {
+      notify(flash.error, 'error')
+    }
+  },
+  { immediate: true, deep: true }
+)
 </script>
 
 <style scoped>

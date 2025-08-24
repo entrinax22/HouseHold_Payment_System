@@ -32,7 +32,13 @@ class AppServiceProvider extends ServiceProvider
                         'role' => Auth::user()->role,
                     ] : null,
                 ];
-            }
+            },
+            'flash' => function () {
+                return [
+                    'success' => session('success'),
+                    'error' => session('error'),
+                ];
+            },
         ]);
         Schema::defaultStringLength(191);
     }

@@ -7,6 +7,23 @@
       </div>
       <nav class="flex-1 p-4 overflow-y-auto">
         <div class="mb-4">
+          <div class="text-xs uppercase text-gray-400 mb-2">Platforms</div>
+          <ul class="space-y-2">
+            <li>
+              <Link :href="route('dashboard')" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
+                <span>👤</span>
+                <span>Dashboard</span>
+              </Link>
+            </li>
+            <li>
+              <Link :href="route('home')" class="flex items-center gap-2 hover:bg-gray-700 p-2 rounded">
+                <span>💸</span>
+                <span>Home</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div class="mb-4">
           <div class="text-xs uppercase text-gray-400 mb-2">Tables</div>
           <ul class="space-y-2">
             <li>
@@ -64,18 +81,37 @@
     <!-- Main Content -->
     <div class="flex-1">
       <slot />
+      <Toast :message="toastMessage" :type="toastType" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
+import Toast from '@/components/Toast.vue';
+import { toastMessage, toastType } from '@/composables/useToast'
+import { notify } from '@/composables/useToast';
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const logout = () => {
   router.post('/logout');
 };
+
+
+watch(
+  () => page.props.flash,
+  (flash) => {
+    if (flash.success) {
+      notify(flash.success, 'success')
+    }
+    if (flash.error) {
+      notify(flash.error, 'error')
+    }
+  },
+  { immediate: true, deep: true }
+)
 </script>
 
 <style scoped>
