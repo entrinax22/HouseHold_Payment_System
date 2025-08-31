@@ -1,108 +1,100 @@
 <template>
-  <div class="rounded-lg border bg-card shadow-sm overflow-x-auto">
-    <table class="min-w-full divide-y divide-muted-foreground/10">
-      <!-- Table Head -->
-      <thead class="bg-muted sticky top-0 z-10">
-        <tr>
-          <!-- Index column -->
-          <th class="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-            #
-          </th>
-          <th
-            v-for="col in columns"
-            :key="col.key"
-            class="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-          >
-            {{ col.label }}
-          </th>
-        </tr>
-      </thead>
+    <div class="overflow-hidden rounded-xl border-2 border-indigo-200 bg-white shadow-xl">
+        <table class="min-w-full divide-y-2 divide-indigo-100">
+            <!-- Table Head -->
+            <thead class="sticky top-0 z-10 bg-gradient-to-r from-indigo-500 to-purple-600">
+                <tr>
+                    <!-- Index column -->
+                    <th class="px-6 py-4 text-left text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase">#</th>
+                    <th
+                        v-for="col in columns"
+                        :key="col.key"
+                        class="px-6 py-4 text-left text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase"
+                    >
+                        {{ col.label }}
+                    </th>
+                </tr>
+            </thead>
 
-      <!-- Table Body -->
-      <tbody class="bg-card divide-y divide-muted-foreground/10">
-        <tr
-          v-for="(row, index) in data"
-          :key="row.id || index"
-          class="hover:bg-muted/50 transition even:bg-muted/20"
+            <!-- Table Body -->
+            <tbody class="divide-y divide-gray-100 bg-white">
+                <tr
+                    v-for="(row, index) in data"
+                    :key="row.id || index"
+                    class="transition-all duration-200 even:bg-gray-50/50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50"
+                >
+                    <!-- Auto Row Number -->
+                    <td class="bg-indigo-50/50 px-6 py-4 text-sm font-bold whitespace-nowrap text-indigo-700">
+                        {{ (pagination.current_page - 1) * pagination.per_page + (index + 1) }}
+                    </td>
+
+                    <td v-for="col in columns" :key="col.key" class="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-700">
+                        <slot :name="col.key" :row="row">
+                            {{ row[col.key] }}
+                        </slot>
+                    </td>
+                </tr>
+
+                <!-- Empty State -->
+                <tr v-if="data.length === 0">
+                    <td :colspan="columns.length + 1" class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-12 text-center text-gray-500">
+                        <div class="flex flex-col items-center gap-3">
+                            <span class="text-4xl">📋</span>
+                            <span class="font-medium">No data found.</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div
+            v-if="pagination"
+            class="flex items-center justify-between border-t-2 border-indigo-100 bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4"
         >
-          <!-- Auto Row Number -->
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-card-foreground">
-            {{ (pagination.current_page - 1) * pagination.per_page + (index + 1) }}
-          </td>
+            <div class="text-sm font-medium text-gray-600">
+                Showing
+                <span class="font-bold text-indigo-700">
+                    {{ (pagination.current_page - 1) * pagination.per_page + 1 }}
+                </span>
+                to
+                <span class="font-bold text-indigo-700">
+                    {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }}
+                </span>
+                of
+                <span class="font-bold text-indigo-700">{{ pagination.total }}</span>
+                results
+            </div>
 
-          <td
-            v-for="col in columns"
-            :key="col.key"
-            class="px-6 py-4 whitespace-nowrap text-sm text-card-foreground"
-          >
-            <slot :name="col.key" :row="row">
-              {{ row[col.key] }}
-            </slot>
-          </td>
-        </tr>
+            <div class="flex gap-3">
+                <button
+                    :disabled="pagination.current_page === 1"
+                    @click="$emit('page-change', pagination.current_page - 1)"
+                    class="rounded-lg border-2 border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all duration-200 hover:scale-105 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    ← Prev
+                </button>
 
-        <!-- Empty State -->
-        <tr v-if="data.length === 0">
-          <td
-            :colspan="columns.length + 1"
-            class="px-6 py-8 text-center text-muted-foreground"
-          >
-            No data found.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination Controls -->
-    <div
-      v-if="pagination"
-      class="flex items-center justify-between px-6 py-4 border-t bg-card"
-    >
-      <div class="text-sm text-muted-foreground">
-        Showing
-        <span class="font-medium">
-          {{ (pagination.current_page - 1) * pagination.per_page + 1 }}
-        </span>
-        to
-        <span class="font-medium">
-          {{
-            Math.min(pagination.current_page * pagination.per_page, pagination.total)
-          }}
-        </span>
-        of
-        <span class="font-medium">{{ pagination.total }}</span>
-        results
-      </div>
-
-      <div class="flex gap-2">
-        <button
-          :disabled="pagination.current_page === 1"
-          @click="$emit('page-change', pagination.current_page - 1)"
-          class="px-3 py-1 rounded border text-sm disabled:opacity-50"
-        >
-          Prev
-        </button>
-
-        <button
-          :disabled="pagination.current_page === pagination.last_page"
-          @click="$emit('page-change', pagination.current_page + 1)"
-          class="px-3 py-1 rounded border text-sm disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+                <button
+                    :disabled="pagination.current_page === pagination.last_page"
+                    @click="$emit('page-change', pagination.current_page + 1)"
+                    class="rounded-lg border-2 border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all duration-200 hover:scale-105 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    Next →
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
 defineProps({
-  columns: Array,
-  data: Array,
-  pagination: {
-    type: Object,
-    default: null,
-  },
+    columns: Array,
+    data: Array,
+    pagination: {
+        type: Object,
+        default: null,
+    },
 });
-defineEmits(["page-change"]);
+defineEmits(['page-change']);
 </script>
