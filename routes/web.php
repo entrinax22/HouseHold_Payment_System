@@ -2,16 +2,17 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ContributionController;
-use App\Http\Controllers\PaypalController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-
+Route::get('/gallery', [HomeController::class, 'gallery'])->name('gallery');
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('dashboard', function () {

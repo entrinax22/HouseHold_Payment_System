@@ -1,10 +1,27 @@
 <script setup>
 import MainLayout from '@/layouts/MainLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
-
+import axios from 'axios';
+import { computed, onMounted, ref } from 'vue';
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const images = ref([]);
+const fetch = async () => {
+    try {
+        const response = await axios.get(route('gallery'));
+        if (response.data.result === true) {
+            images.value = response.data.galleryFiles;
+        } else {
+            console.log(response.data.message);
+        }
+    } catch (error) {
+        console.log(error.messages);
+    }
+};
+
+onMounted(() => {
+    fetch();
+});
 </script>
 
 <template>
@@ -41,7 +58,7 @@ const user = computed(() => page.props.auth.user);
 
                     <!-- Hero Image -->
                     <div class="w-full lg:w-1/2">
-                        <img src="/images/bg.jpg" alt="Community" class="h-64 w-full rounded-xl object-cover shadow-lg lg:h-80" />
+                        <img src="/logo.png" alt="Community" class="h-64 w-full rounded-xl object-cover lg:h-80" />
                     </div>
                 </div>
             </main>
@@ -105,6 +122,26 @@ const user = computed(() => page.props.auth.user);
                             </p>
                             <footer class="mt-4 font-semibold">– Juan, Community Leader</footer>
                         </blockquote>
+                    </div>
+                </div>
+            </section>
+            <!-- Gallery Section -->
+            <section class="bg-background border-muted border-t px-6 py-20">
+                <div class="mx-auto max-w-6xl space-y-12 text-center">
+                    <h3 class="text-3xl font-bold">Neighborhood Gallery</h3>
+                    <p class="text-muted-foreground mx-auto max-w-2xl">
+                        A glimpse into our vibrant community — events, gatherings, and the everyday life that brings us together.
+                    </p>
+
+                    <!-- ✅ Put grid here, loop inside -->
+                    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        <div
+                            v-for="(image, index) in images"
+                            :key="index"
+                            class="overflow-hidden rounded-xl shadow-md transition hover:scale-105 hover:shadow-xl"
+                        >
+                            <img :src="image" alt="Community Event" class="h-48 w-full object-cover" />
+                        </div>
                     </div>
                 </div>
             </section>
