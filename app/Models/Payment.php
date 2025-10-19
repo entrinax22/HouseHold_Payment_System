@@ -19,7 +19,7 @@ class Payment extends Model
     
     public function contribution()
     {
-        return $this->belongsTo(Contribution::class, 'contribution_id');
+        return $this->belongsTo(Contribution::class, 'contribution_id', 'contribution_id');
     }    
 
     public function user()

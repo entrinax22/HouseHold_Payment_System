@@ -37,17 +37,16 @@
                         <!-- User ID (only show if personal) -->
                         <div v-if="form.contribution_type === 'personal'">
                             <label for="user_id" class="mb-2 block text-sm font-semibold text-gray-700"> Contributor </label>
-                            <select
+                            <Multiselect
                                 v-model="form.user_id"
-                                id="user_id"
-                                required
-                                class="block w-full rounded-xl border-2 border-blue-200 bg-white px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none"
-                            >
-                                <option value="">Select User</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    {{ user.name }}
-                                </option>
-                            </select>
+                                :options="users"
+                                :searchable="true"
+                                :close-on-select="true"
+                                :show-labels="false"
+                                placeholder="Select a user"
+                                label="name"
+                                track-by="id"
+                            />
                         </div>
 
                         <!-- Amount -->
@@ -124,11 +123,13 @@
 </template>
 
 <script setup>
+import { notify } from '@/composables/useToast';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
-
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.css';
 const form = useForm({
     user_id: '',
     amount: '',
@@ -166,10 +167,18 @@ watch(
 
 const submit = async () => {
     const route_url = route('contributions.store');
+    const payload = {
+        user_id: form.user_id ? form.user_id.id : null,
+        amount: form.amount,
+        contribution_date: form.contribution_date,
+        contribution_type: form.contribution_type,
+        status: form.status,
+        description: form.description,
+    };
     try {
-        const response = await axios.post(route_url, form);
+        const response = await axios.post(route_url, payload);
         if (response.data.result === true) {
-            console.log('success');
+            notify('Contribution created successfully.', 'success');
             // reset fields correctly
             form.user_id = '';
             form.amount = '';

@@ -58,7 +58,7 @@ onMounted(() => {
 
                     <!-- Hero Image -->
                     <div class="w-full lg:w-1/2">
-                        <img src="/logo.png" alt="Community" class="h-64 w-full rounded-xl object-cover lg:h-80" />
+                        <img src="/logo.png" alt="Community" class="h-96 w-full rounded-xl object-contain lg:h-80" style="height: 500px" />
                     </div>
                 </div>
             </main>

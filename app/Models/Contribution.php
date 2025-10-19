@@ -23,7 +23,7 @@ class Contribution extends Model
 
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'contribution_id');
+        return $this->hasMany(Payment::class, 'contribution_id', 'contribution_id');
     }
 
     public function isPaid()
