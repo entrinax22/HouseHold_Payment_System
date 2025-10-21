@@ -2,10 +2,12 @@ import { onMounted, ref } from 'vue';
 
 type Appearance = 'light';
 
-export function updateTheme(value: Appearance) {
-    if (typeof window === 'undefined') {
-        return;
-    }
+export function updateTheme() {
+    if (typeof document === 'undefined') return;
+
+    const html = document.documentElement;
+    html.classList.remove('dark');
+    html.dataset.theme = 'light';
 }
 
 const setCookie = (name: string, value: string, days = 365) => {
@@ -41,16 +43,10 @@ const handleSystemThemeChange = () => {
 };
 
 export function initializeTheme() {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
-    // Initialize theme from saved preference or default to system...
-    const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'light');
-
-    // Set up system theme change listener...
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    // ✅ Always start in light mode
+    updateTheme('light');
 }
 
 export function useAppearance() {

@@ -55,18 +55,21 @@ class ContributionController extends Controller
                     ], 422);
                 }
             }
+            $contribution = Contribution::create($validated);
+
             if ($contribution->contribution_type === 'personal' && $contribution->user_id) {
                 $user = User::find($contribution->user_id);
-
+    
                 if ($user && $user->mobile_number) {
                     $number = $user->mobile_number;
                     $message = "Hello {$user->name}, your personal contribution of ₱{$contribution->amount} "
-                    . "has been recorded. Please proceed with your payment at your earliest convenience. "
-                    . "Thank you for your support!";
-
+                        . "has been recorded. Please proceed with your payment at your earliest convenience. "
+                        . "Thank you for your support!";
+    
                     $this->semaphore->sendSMS($number, $message);
                 }
             }
+            
             return response()->json([
                 'result'  => true,
                 'message' => 'Contribution created successfully.',

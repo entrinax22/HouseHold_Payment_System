@@ -18,10 +18,6 @@ Route::get('/', function () {
 Route::get('/gallery', [HomeController::class, 'gallery'])->name('gallery');
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/create/{contribution_id}', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('payments/store', [PaymentController::class, 'store'])->name('payments.store');

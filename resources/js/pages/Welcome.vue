@@ -5,6 +5,7 @@ import axios from 'axios';
 import { computed, onMounted, ref } from 'vue';
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
 const images = ref([]);
 const fetch = async () => {
     try {
@@ -40,15 +41,38 @@ onMounted(() => {
                             Bringing neighbors together by making shared expenses transparent, fair, and easy to manage. Join your community in
                             building a better, more connected neighborhood.
                         </p>
+                        <!-- Buttons -->
                         <div class="flex justify-center gap-4 lg:justify-start">
+                            <!-- Show "Get Started" if no user is logged in -->
                             <Link
+                                v-if="!user || !user.id"
                                 href="/register"
                                 class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-emerald-600 hover:to-teal-600 hover:shadow-xl"
                             >
                                 Get Started
                             </Link>
+
+                            <!-- If user is admin, go to dashboard -->
                             <Link
-                                href="/about"
+                                v-else-if="user.role === 'admin'"
+                                :href="route('dashboard')"
+                                class="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-blue-600 hover:to-indigo-600 hover:shadow-xl"
+                            >
+                                Go to Dashboard
+                            </Link>
+
+                            <!-- If user is regular user, go to My Contributions -->
+                            <Link
+                                v-else
+                                :href="route('contributions.userContributions')"
+                                class="rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-green-600 hover:to-emerald-600 hover:shadow-xl"
+                            >
+                                My Contributions
+                            </Link>
+
+                            <!-- Always show Learn More -->
+                            <Link
+                                href="#about"
                                 class="rounded-xl border-2 border-blue-500 px-8 py-4 font-semibold text-blue-600 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-blue-500 hover:text-white hover:shadow-xl"
                             >
                                 Learn More
@@ -64,7 +88,7 @@ onMounted(() => {
             </main>
 
             <!-- About Section -->
-            <section class="bg-muted/10 px-6 py-20">
+            <section class="bg-muted/10 px-6 py-20" id="about">
                 <div class="mx-auto max-w-4xl space-y-6 text-center">
                     <h3 class="text-3xl font-bold">About Our Neighborhood</h3>
                     <p class="text-muted-foreground text-lg leading-relaxed">
