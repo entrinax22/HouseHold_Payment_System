@@ -179,13 +179,22 @@ const generatePDFReport = () => {
                     gap: 10px;
                     padding: 20px 0;
                     border-bottom: 2px solid #e5e7eb;
+                    margin: 30px 0; /* Add margin for labels */
                 }
                 .bar {
                     flex: 1;
                     background: linear-gradient(to top, #3b82f6, #60a5fa);
                     border-radius: 4px 4px 0 0;
                     position: relative;
-                    min-height: 5px;
+                    min-height: 1px;
+                        transition: all 0.3s ease;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                }
+                .bar:hover {
+                    background: linear-gradient(to top, #2563eb, #3b82f6);
+                    transform: scaleY(1.02);
                 }
                 .bar-label {
                     position: absolute;
@@ -205,6 +214,10 @@ const generatePDFReport = () => {
                     font-weight: bold;
                     color: #1f2937;
                     white-space: nowrap;
+                    background: rgba(255, 255, 255, 0.9);
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                 }
                 .transactions-section {
                     page-break-inside: avoid;
@@ -265,6 +278,15 @@ const generatePDFReport = () => {
                     font-weight: bold;
                     color: #3b82f6;
                 }
+                    @media print {
+                        .bar {
+                            background: #3b82f6 !important;
+                            background-color: #3b82f6 !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            color-adjust: exact !important;
+                        }
+                    }
                 @media print {
                     body {
                         padding: 20px;
@@ -314,16 +336,25 @@ const generatePDFReport = () => {
                         ${fullChartData.value
                             .map((value, idx) => {
                                 const maxValue = Math.max(...fullChartData.value, 1);
-                                const height = (value / maxValue) * 100;
+                                const height = Math.max((value / maxValue) * 100, 1); // Ensure minimum height of 1%
                                 return `
-                                <div class="bar" style="height: ${height}%">
-                                    ${value > 0 ? `<div class="bar-value">${formatCurrency(value)}</div>` : ''}
+                                    <div class="bar" style="height: ${height}%; background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important">
+                                    <div class="bar-value">${formatCurrency(value)}</div>
                                     <div class="bar-label">${fullChartLabels.value[idx]}</div>
                                 </div>
                             `;
                             })
                             .join('')}
                     </div>
+                    <style>
+                        @media print {
+                            .bar {
+                                background-color: #3b82f6 !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                        }
+                    </style>
                 </div>
             </div>
             
@@ -396,7 +427,7 @@ onMounted(() => {
 const selectedPeriod = ref('12months');
 const hoveredBar = ref<number | null>(null);
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount: number | string): string => {
     const numericValue = Number(amount);
     if (isNaN(numericValue)) return '₱0.00';
     return `₱${numericValue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
@@ -442,18 +473,6 @@ const growthPercentage = computed(() => {
                                 <p class="mt-1 text-sm text-gray-600">Track and manage all community contributions</p>
                             </div>
                             <div class="flex gap-3">
-                                <button
-                                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                    Filter
-                                </button>
                                 <button
                                     @click="generatePDFReport"
                                     :disabled="isGeneratingPDF"
@@ -648,11 +667,11 @@ const growthPercentage = computed(() => {
                                     <div v-if="chartData.length" class="relative flex h-80 w-full">
                                         <!-- Y-axis -->
                                         <div class="mr-4 flex h-full flex-col justify-between py-1 text-xs font-medium text-gray-500">
-                                            <span>{{ maxChartValue.toLocaleString() }}</span>
-                                            <span>{{ Math.round(maxChartValue * 0.75).toLocaleString() }}</span>
-                                            <span>{{ Math.round(maxChartValue * 0.5).toLocaleString() }}</span>
-                                            <span>{{ Math.round(maxChartValue * 0.25).toLocaleString() }}</span>
-                                            <span>0</span>
+                                            <span>{{ formatCurrency(maxChartValue) }}</span>
+                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.75)) }}</span>
+                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.5)) }}</span>
+                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.25)) }}</span>
+                                            <span>₱0.00</span>
                                         </div>
 
                                         <!-- Chart Area -->
@@ -676,29 +695,26 @@ const growthPercentage = computed(() => {
                                                     @mouseleave="hoveredBar = null"
                                                 >
                                                     <div
-                                                        v-if="value > 0"
                                                         class="w-full rounded-t-lg bg-gradient-to-t from-blue-500 to-blue-400 transition-all duration-300"
                                                         :class="hoveredBar === idx ? 'from-blue-600 to-blue-500 shadow-lg' : ''"
-                                                        :style="{ height: (value / maxChartValue) * 100 + '%', minHeight: '4px' }"
+                                                        :style="{
+                                                            height: value > 0 ? Math.max((value / maxChartValue) * 100, 2) + '%' : '2px',
+                                                            opacity: value > 0 ? 1 : 0.2,
+                                                        }"
                                                     ></div>
 
-                                                    <!-- Tooltip -->
+                                                    <!-- Value label (always visible) -->
                                                     <div
-                                                        v-if="hoveredBar === idx"
-                                                        class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg"
+                                                        class="absolute -top-6 left-1/2 -translate-x-1/2 rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm transition-all"
+                                                        :class="hoveredBar === idx ? 'bg-gray-900 text-white' : ''"
                                                     >
                                                         {{ formatCurrency(value) }}
-                                                        <div class="absolute top-full left-1/2 -translate-x-1/2">
-                                                            <div class="border-4 border-transparent border-t-gray-900"></div>
-                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
 
-                                            <!-- X-axis labels -->
-                                            <div class="mt-3 flex w-full gap-2 px-1 text-xs font-medium text-gray-600">
-                                                <div v-for="(label, idx) in chartLabels" :key="idx" class="min-w-0 flex-1 text-center">
-                                                    {{ label }}
+                                                    <!-- Month label -->
+                                                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-600">
+                                                        {{ chartLabels[idx] }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -768,7 +784,7 @@ const growthPercentage = computed(() => {
                                                             {{
                                                                 c.payer
                                                                     .split(' ')
-                                                                    .map((n) => n[0])
+                                                                    .map((n: string) => n[0])
                                                                     .join('')
                                                                     .toUpperCase()
                                                             }}

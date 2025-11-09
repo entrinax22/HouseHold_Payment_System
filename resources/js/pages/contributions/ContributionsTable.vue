@@ -37,18 +37,18 @@
                     </template>
 
                     <!-- Custom Slot for status -->
-                    <template #payment_status="{ row }">
+                    <template #status="{ row }">
                         <span
                             :class="[
                                 'inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shadow-sm',
-                                row.payment_status === 'paid'
+                                row.status === 'active'
                                     ? 'border border-emerald-200 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800'
-                                    : row.payment_status === 'unpaid'
+                                    : row.payment_status === 'disabled'
                                       ? 'border border-yellow-200 bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800'
                                       : 'border border-red-200 bg-gradient-to-r from-red-100 to-pink-100 text-red-800',
                             ]"
                         >
-                            {{ row.payment_status }}
+                            {{ row.status }}
                         </span>
                     </template>
 
@@ -207,7 +207,7 @@ const columns = [
     { key: 'contribution_date', label: 'Date' },
     { key: 'contribution_type', label: 'Type' },
     { key: 'description', label: 'Description' },
-    { key: 'payment_status', label: 'Status' },
+    { key: 'status', label: 'Status' },
     { key: 'actions', label: 'Actions' },
 ];
 

@@ -43,11 +43,27 @@ class Contribution extends Model
     {
         try {
             if ($this->contribution_type === 'community') {
-                // For community contributions, check if the current user has paid
-                    return $this->communityPayments()
-                        ->where('user_id', auth()->id())
+                // For community contributions in admin context (like dashboard)
+                if (optional(auth()->user())->role === 'admin') {
+                    // Get count of unique users who need to pay
+                    $expectedPayers = $this->participants()->count();
+                    if ($expectedPayers === 0) {
+                        $expectedPayers = User::count(); // Fallback to all users if no participants set
+                    }
+
+                    // Count how many have actually paid
+                    $paidCount = $this->communityPayments()
                         ->where('payment_status', 'paid')
-                        ->exists();
+                        ->count();
+
+                    return $paidCount >= $expectedPayers;
+                }
+                
+                // For regular users viewing their own status
+                return $this->communityPayments()
+                    ->where('user_id', auth()->id())
+                    ->where('payment_status', 'paid')
+                    ->exists();
             }
             
             // For personal contributions, check if total payments meet or exceed the amount
@@ -59,6 +75,6 @@ class Contribution extends Model
         } catch (\Exception $e) {
             \Log::error('Error checking payment status: ' . $e->getMessage());
             return false;
-            }
+        }
     }
 }

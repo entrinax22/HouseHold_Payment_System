@@ -242,6 +242,10 @@ const editForm = ref({
     description: '',
 });
 
+const closeModal = () => {
+    showEditModal.value = false;
+};
+
 const editPayment = async (payment_id) => {
     const route_url = route('admin.payments.edit', { payment_id });
     try {
@@ -281,7 +285,7 @@ const updatePayment = async () => {
     try {
         const response = await axios.post(route_url, payload);
         if (response.data.result === true) {
-            notify('Payment deleted successfully!', 'success');
+            notify('Payment updated successfully!', 'success');
             editForm.value = {
                 payment_id: '',
                 user_id: '',

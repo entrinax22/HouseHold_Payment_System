@@ -14,10 +14,46 @@ class DashboardController extends Controller
     public function index()
     {
         try {
-            $totalContributions = Contribution::sum('amount');
-            $totalPayments = Payment::sum('amount_paid');
-            $totalPaidContributions = Contribution::all()->filter->isPaid()->count();
-            $pendingPayments = Payment::where('payment_status', 'pending')->sum('amount_paid');
+            $contributions = Contribution::with(['payments', 'communityPayments', 'participants'])->get();
+
+            // Get total of all personal contributions
+            $personalTotal = $contributions
+                ->where('contribution_type', 'personal')
+                ->sum('amount');
+
+            // Get total of all community contributions (multiplied by participants)
+            $communityTotal = $contributions
+                ->where('contribution_type', 'community')
+                ->sum(function ($contribution) {
+                    $participantCount = $contribution->participants()->count() ?: User::count();
+                    return $contribution->amount * $participantCount;
+                });
+
+            $totalContributions = $personalTotal + $communityTotal;
+
+            // Only sum confirmed payments
+            $totalPayments = Payment::where('payment_status', 'paid')
+                ->sum('amount_paid');
+
+            // Count fully paid contributions
+            $totalPaidContributions = $contributions->filter(function ($contribution) {
+                if ($contribution->contribution_type === 'community') {
+                    // For community contributions, check if there are any payments
+                    return $contribution->payments()
+                        ->where('payment_status', 'paid')
+                        ->exists();
+                } else {
+                    // For personal contributions, total payments must meet or exceed amount
+                    $paidAmount = $contribution->payments()
+                        ->where('payment_status', 'paid')
+                        ->sum('amount_paid');
+                    return $paidAmount >= $contribution->amount;
+                }
+            })->count();
+
+            // Only count payments marked as pending
+            $pendingPayments = Payment::where('payment_status', 'pending')
+                ->sum('amount_paid');
 
             $monthlyPayments = Payment::select(
                 DB::raw('MONTH(payment_date) as month'),

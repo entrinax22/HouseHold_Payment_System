@@ -153,9 +153,7 @@ class PaymentController extends Controller
                     'user_name'         => $item->user ? $item->user->name : null,
                     'is_community'      => $item->contribution ? $item->contribution->contribution_type === 'community' : false,
                     'amount_paid'       => $item->amount_paid,
-                    'payment_status'    => $item->contribution && $item->contribution->contribution_type === 'community'
-                        ? ($item->contribution->communityPayments->where('user_id', Auth::id())->first()?->payment_status ?? 'unpaid')
-                        : $item->payment_status,
+                    'payment_status'    => $item->payment_status,
                     'payment_method'    => $item->payment_method,
                     'description'       => $item->contribution ? $item->contribution->description : null,
                     'contribution_date' => $item->contribution ? $item->contribution->contribution_date : null,
