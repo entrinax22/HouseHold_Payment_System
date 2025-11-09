@@ -55,7 +55,15 @@ class ContributionController extends Controller
                     ], 422);
                 }
             }
+
+            // For community contributions, ensure user_id is null
+            if ($validated['contribution_type'] === 'community') {
+                $validated['user_id'] = null;
+            }
+            
+            \Log::info('Creating contribution with data:', $validated);
             $contribution = Contribution::create($validated);
+            \Log::info('Created contribution:', $contribution->toArray());
 
             if ($contribution->contribution_type === 'personal' && $contribution->user_id) {
                 $user = User::find($contribution->user_id);
@@ -67,6 +75,13 @@ class ContributionController extends Controller
                         . "Thank you for your support!";
     
                     $this->semaphore->sendSMS($number, $message);
+                }
+            }else{
+                $users = User::whereNotNull('mobile_number')->get();
+                foreach ($users as $user) {
+                    $message = "A new community contribution of ₱{$contribution->amount} has been recorded. "
+                        . "Please proceed with your payment at your earliest convenience. Thank you for your support!";
+                    $this->semaphore->sendSMS($user->mobile_number, $message);
                 }
             }
             
@@ -86,14 +101,33 @@ class ContributionController extends Controller
     {   
         $user_id = Auth::id();
 
-        $contributions = Contribution::with('payments')
+        // Get all active contributions that are either community type or belong to the user
+        $query = Contribution::with(['payments', 'communityPayments'])
             ->where('status', 'active')
             ->where(function ($query) use ($user_id) {
                 $query->where('contribution_type', 'community')
-                    ->orWhere('user_id', $user_id);
-            })
-            ->get()
-            ->map(function ($contribution) {
+                      ->orWhere('user_id', $user_id);
+            });
+
+        // Log the SQL query for debugging
+        \Log::info('Contributions Query: ' . $query->toSql());
+        \Log::info('Query bindings:', $query->getBindings());
+        
+        $contributions = $query->get();
+        
+        // Log the results
+        \Log::info('Found contributions count: ' . $contributions->count());
+        \Log::info('Contribution types found: ' . $contributions->pluck('contribution_type')->implode(', '));
+
+        $contributions = $contributions->map(function ($contribution) use ($user_id) {
+            // For community contributions, check user's individual payment status
+            $paymentStatus = $contribution->contribution_type === 'community'
+                ? ($contribution->communityPayments()
+                    ->where('user_id', $user_id)
+                    ->where('payment_status', 'paid')
+                    ->exists() ? 'paid' : 'unpaid')
+                : $contribution->payment_status;
+
                 return [
                     'contribution_id'   => encrypt($contribution->contribution_id),
                     'amount'            => $contribution->amount,
@@ -101,7 +135,7 @@ class ContributionController extends Controller
                     'contribution_date' => $contribution->contribution_date,
                     'description'       => $contribution->description,
                     'status'            => $contribution->status,
-                    'payment_status'    => $contribution->payment_status,
+                    'payment_status'    => $paymentStatus,
                 ];
             });
 
@@ -242,6 +276,13 @@ class ContributionController extends Controller
                     . "Thank you for your support!";
 
                     $this->semaphore->sendSMS($number, $message);
+                }
+            }else{
+                $users = User::whereNotNull('mobile_number')->get();
+                foreach ($users as $user) {
+                    $message = "A new community contribution of ₱{$contribution->amount} has been recorded. "
+                        . "Please proceed with your payment at your earliest convenience. Thank you for your support!";
+                    $this->semaphore->sendSMS($user->mobile_number, $message);
                 }
             }
 

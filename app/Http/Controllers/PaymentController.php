@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Services\SemaphoreService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\CommunityContributionPayment;
 
 class PaymentController extends Controller
 {   
@@ -59,6 +60,14 @@ class PaymentController extends Controller
         }
         
         $contribution_id = decrypt($request->contribution_id);
+        $contribution = Contribution::find($contribution_id);
+        if (!$contribution) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Contribution not found'
+            ], 404);
+        }
+
         $payment = Payment::create([
             'user_id' => Auth::id(),
             'contribution_id' => $contribution_id,
@@ -69,8 +78,36 @@ class PaymentController extends Controller
             'payment_status' => 'paid', 
         ]);
 
-        $contribution = Contribution::find($contribution_id);
-        if ($contribution) {
+        // Handle payment status updates differently for community vs personal contributions
+        if ($contribution->contribution_type === 'community') {
+            // For community contributions, track individual payment status
+            CommunityContributionPayment::updateOrCreate(
+                [
+                    'contribution_id' => $contribution_id,
+                    'user_id' => Auth::id(),
+                ],
+                [
+                    'payment_status' => 'paid'
+                ]
+            );
+
+            // Check if all participants have paid (use participants relation if available)
+            $participantCount = $contribution->participants()->count();
+            // Fallback to all users if no participants defined
+            if ($participantCount === 0) {
+                $participantCount = User::count();
+            }
+
+            $paidUsers = CommunityContributionPayment::where('contribution_id', $contribution_id)
+                ->where('payment_status', 'paid')
+                ->count();
+
+            if ($participantCount > 0 && $paidUsers >= $participantCount) {
+                $contribution->payment_status = 'paid';
+                $contribution->save();
+            }
+        } else {
+            // For personal contributions, update status directly
             $contribution->payment_status = 'paid';
             $contribution->save();
         }
@@ -92,7 +129,9 @@ class PaymentController extends Controller
     {
         try {
             $search = $request->search;
-            $query = Payment::with('user', 'contribution'); 
+            $query = Payment::with(['user', 'contribution' => function($q) {
+                $q->with('communityPayments');
+            }]); 
 
             if (!empty($search)) {
                 $query->where(function ($q) use ($search) {
@@ -111,9 +150,12 @@ class PaymentController extends Controller
                     'payment_id'        => encrypt($item->payment_id),
                     'contribution_id'   => encrypt($item->contribution_id),
                     'user_id'           => $item->user ? encrypt($item->user->id) : null,
-                    'user_name'         => $item->user ? $item->user->name : 'Community',
+                    'user_name'         => $item->user ? $item->user->name : null,
+                    'is_community'      => $item->contribution ? $item->contribution->contribution_type === 'community' : false,
                     'amount_paid'       => $item->amount_paid,
-                    'payment_status'    => $item->payment_status,
+                    'payment_status'    => $item->contribution && $item->contribution->contribution_type === 'community'
+                        ? ($item->contribution->communityPayments->where('user_id', Auth::id())->first()?->payment_status ?? 'unpaid')
+                        : $item->payment_status,
                     'payment_method'    => $item->payment_method,
                     'description'       => $item->contribution ? $item->contribution->description : null,
                     'contribution_date' => $item->contribution ? $item->contribution->contribution_date : null,

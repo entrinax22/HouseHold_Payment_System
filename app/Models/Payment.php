@@ -26,4 +26,26 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id'); 
     }
+
+    protected static function booted()
+    {
+        static::created(function ($payment) {
+            try {
+                $contribution = $payment->contribution()->first();
+                if ($contribution && $contribution->contribution_type === 'community') {
+                    \App\Models\CommunityContributionPayment::updateOrCreate(
+                        [
+                            'contribution_id' => $payment->contribution_id,
+                            'user_id' => $payment->user_id,
+                        ],
+                        [
+                            'payment_status' => $payment->payment_status ?? 'paid'
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error syncing community payment on Payment created: ' . $e->getMessage());
+            }
+        });
+    }
 }

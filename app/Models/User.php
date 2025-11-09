@@ -49,4 +49,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Contributions where the user is a participant.
+     */
+    public function contributions()
+    {
+        return $this->belongsToMany(Contribution::class, 'contribution_participants', 'user_id', 'contribution_id', 'id', 'contribution_id');
+    }
 }
