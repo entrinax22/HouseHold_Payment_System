@@ -456,6 +456,10 @@ const growthPercentage = computed(() => {
     if (previousMonth === 0) return currentMonth > 0 ? 100 : 0;
     return Math.round(((currentMonth - previousMonth) / previousMonth) * 100);
 });
+
+const ViewAll = () => {
+    window.location.href = route('payments.index');
+};
 </script>
 
 <template>
@@ -664,14 +668,14 @@ const growthPercentage = computed(() => {
                                     </div>
 
                                     <!-- Chart -->
-                                    <div v-if="chartData.length" class="relative flex h-80 w-full">
+                                    <div v-if="chartData.length" class="relative mt-6 flex h-80 w-full">
                                         <!-- Y-axis -->
                                         <div class="mr-4 flex h-full flex-col justify-between py-1 text-xs font-medium text-gray-500">
-                                            <span>{{ formatCurrency(maxChartValue) }}</span>
-                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.75)) }}</span>
-                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.5)) }}</span>
-                                            <span>{{ formatCurrency(Math.round(maxChartValue * 0.25)) }}</span>
-                                            <span>₱0.00</span>
+                                            <span class="w-24 text-right">{{ formatCurrency(maxChartValue) }}</span>
+                                            <span class="w-24 text-right">{{ formatCurrency(Math.round(maxChartValue * 0.75)) }}</span>
+                                            <span class="w-24 text-right">{{ formatCurrency(Math.round(maxChartValue * 0.5)) }}</span>
+                                            <span class="w-24 text-right">{{ formatCurrency(Math.round(maxChartValue * 0.25)) }}</span>
+                                            <span class="w-24 text-right">₱0.00</span>
                                         </div>
 
                                         <!-- Chart Area -->
@@ -686,33 +690,38 @@ const growthPercentage = computed(() => {
                                             </div>
 
                                             <!-- Bars -->
-                                            <div class="relative flex w-full flex-1 items-end gap-2 px-1">
+                                            <div class="relative flex h-full w-full items-end gap-2 px-1 pb-8">
                                                 <div
                                                     v-for="(value, idx) in chartData"
                                                     :key="idx"
-                                                    class="group relative min-w-0 flex-1 cursor-pointer"
+                                                    class="group relative h-full flex-1 cursor-pointer"
                                                     @mouseenter="hoveredBar = idx"
                                                     @mouseleave="hoveredBar = null"
                                                 >
                                                     <div
-                                                        class="w-full rounded-t-lg bg-gradient-to-t from-blue-500 to-blue-400 transition-all duration-300"
-                                                        :class="hoveredBar === idx ? 'from-blue-600 to-blue-500 shadow-lg' : ''"
+                                                        class="absolute right-0 bottom-0 left-0 rounded-t-lg transition-all duration-300"
+                                                        :class="hoveredBar === idx ? 'shadow-lg' : ''"
                                                         :style="{
-                                                            height: value > 0 ? Math.max((value / maxChartValue) * 100, 2) + '%' : '2px',
+                                                            height: value > 0 ? Math.max((value / maxChartValue) * 100, 4) + '%' : '4px',
+                                                            backgroundColor: value > 0 ? '#3b82f6' : '#e5e7eb',
                                                             opacity: value > 0 ? 1 : 0.2,
                                                         }"
                                                     ></div>
 
-                                                    <!-- Value label (always visible) -->
+                                                    <!-- Value label -->
                                                     <div
-                                                        class="absolute -top-6 left-1/2 -translate-x-1/2 rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm transition-all"
-                                                        :class="hoveredBar === idx ? 'bg-gray-900 text-white' : ''"
+                                                        class="absolute -top-8 left-1/2 z-10 -translate-x-1/2 rounded-md px-2 py-1 text-xs font-semibold shadow-sm transition-all"
+                                                        :class="hoveredBar === idx ? 'scale-110 bg-gray-900 text-white' : 'bg-white text-gray-900'"
                                                     >
-                                                        {{ formatCurrency(value) }}
+                                                        <div class="whitespace-nowrap">{{ formatCurrency(value) }}</div>
+                                                        <div
+                                                            class="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45"
+                                                            :class="hoveredBar === idx ? 'bg-gray-900' : 'bg-white'"
+                                                        ></div>
                                                     </div>
 
                                                     <!-- Month label -->
-                                                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-600">
+                                                    <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-600">
                                                         {{ chartLabels[idx] }}
                                                     </div>
                                                 </div>
@@ -766,7 +775,9 @@ const growthPercentage = computed(() => {
                                 <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                                     <div class="mb-6 flex items-center justify-between">
                                         <h3 class="text-lg font-bold text-gray-900">Recent Activity</h3>
-                                        <button class="text-sm font-semibold text-blue-600 transition hover:text-blue-700">View All</button>
+                                        <button @click="ViewAll" class="text-sm font-semibold text-blue-600 transition hover:text-blue-700">
+                                            View All
+                                        </button>
                                     </div>
 
                                     <div v-if="contributions.length" class="space-y-4">
@@ -858,13 +869,6 @@ const growthPercentage = computed(() => {
                                         </svg>
                                         <p>No recent activity</p>
                                     </div>
-
-                                    <button
-                                        v-if="contributions.length"
-                                        class="mt-6 w-full rounded-lg border-2 border-dashed border-gray-200 py-3 text-sm font-semibold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                                    >
-                                        Load More Transactions
-                                    </button>
                                 </div>
                             </div>
                         </div>

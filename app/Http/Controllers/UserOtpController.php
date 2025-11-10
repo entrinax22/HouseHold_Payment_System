@@ -29,9 +29,9 @@ class UserOtpController extends Controller
 
         $message = "Your password change OTP code is: $otp. Do not share this with anyone.";
 
-        $this->semaphore->sendSMS($request->phone, $message);
+        $response = $this->semaphore->sendSMS($request->phone, $message);
 
-        return response()->json(['result' => true, 'message' => 'OTP sent successfully']);
+        return response()->json(['result' => true, 'message' => 'OTP sent successfully', 'semaphore_response' => $response]);
     }
 
     public function verify(Request $request)
